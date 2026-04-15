@@ -1,0 +1,662 @@
+# ============================================================
+#  DEMO CONCIENCIACION - FAKE RANSOMWARE
+#  Carpeta: C:\Archivos_Importantes
+#  Codigo descifrado: se obtiene chateando con el "atacante"
+#  Pulsa ESC para cerrar
+# ============================================================
+
+$ErrorActionPreference = "Stop"
+
+try {
+
+$demoPath = "C:\Archivos_Importantes"
+$decryptKey = "WN4-DCR-2026"
+$bitcoinWallet = "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"
+
+Write-Host "Ruta demo: $demoPath"
+Write-Host ""
+
+# --- CREAR CARPETA Y ARCHIVOS DE EMPRESA ---
+Write-Host "Creando carpeta $demoPath ..."
+if (Test-Path $demoPath) {
+    Remove-Item $demoPath -Recurse -Force
+    Write-Host "Carpeta anterior eliminada."
+}
+New-Item -ItemType Directory -Path $demoPath -Force | Out-Null
+Write-Host "Carpeta creada OK."
+
+$archivosEmpresa = @{
+
+"Factura_00412_ClienteGlobal.pdf" = @"
+FACTURA Nro: 00412
+Fecha: 15/04/2026
+Cliente: Global Logistics S.L.
+CIF: B-82741923
+Concepto: Servicios de consultoria IT - Marzo 2026
+Base imponible: 12.500,00 EUR
+IVA (21%): 2.625,00 EUR
+TOTAL: 15.125,00 EUR
+Cuenta bancaria: ES91 2100 0418 4502 0005 1332
+"@
+
+"Factura_00413_TechSolutions.pdf" = @"
+FACTURA Nro: 00413
+Fecha: 02/04/2026
+Cliente: TechSolutions Europe GmbH
+VAT: DE-298374651
+Concepto: Licencias software enterprise Q1 2026
+Base imponible: 45.000,00 EUR
+IVA (21%): 9.450,00 EUR
+TOTAL: 54.450,00 EUR
+Vencimiento: 30 dias
+"@
+
+"Nominas_Marzo_2026.xlsx" = @"
+NOMINAS - MARZO 2026
+Departamento: Todos
+---------------------------------------------
+Garcia Lopez, Ana       - Directora Financiera    - 4.850,00 EUR
+Martinez Ruiz, Carlos   - Jefe de Desarrollo      - 3.920,00 EUR
+Fernandez Diaz, Laura   - Resp. Comercial         - 3.680,00 EUR
+Sanchez Torres, Miguel  - Administrador Sistemas   - 3.450,00 EUR
+Romero Gil, Patricia    - Recursos Humanos         - 3.200,00 EUR
+Lopez Vega, David       - Desarrollador Senior     - 3.150,00 EUR
+Moreno Castro, Isabel   - Marketing Digital        - 2.980,00 EUR
+Jimenez Ortiz, Raul     - Soporte Tecnico          - 2.750,00 EUR
+---------------------------------------------
+TOTAL BRUTO NOMINAS: 27.980,00 EUR
+"@
+
+"Clientes_VIP_2026.xlsx" = @"
+LISTADO CLIENTES VIP - CONFIDENCIAL
+Ultima actualizacion: 10/04/2026
+---------------------------------------------
+Global Logistics S.L.    | Facturacion anual: 180.000 EUR
+TechSolutions GmbH       | Facturacion anual: 210.000 EUR
+Iberica Construcciones    | Facturacion anual: 95.000 EUR
+Pharma Health Group       | Facturacion anual: 320.000 EUR
+MediterraneanFood S.A.    | Facturacion anual: 78.000 EUR
+AutoParts International   | Facturacion anual: 145.000 EUR
+---------------------------------------------
+TOTAL CARTERA VIP: 1.028.000 EUR
+"@
+
+"Estrategia_Comercial_2026.pptx" = @"
+PLAN ESTRATEGICO COMERCIAL 2026
+Clasificacion: CONFIDENCIAL - Solo direccion
+Crecimiento objetivo: +18%
+Nuevos mercados: Alemania, Francia, Italia
+Presupuesto total: 1.050.000 EUR
+"@
+
+"Contratos_Proveedores_2026.docx" = @"
+REGISTRO DE CONTRATOS CON PROVEEDORES
+Ejercicio 2026 - CONFIDENCIAL
+AWS: 36.000 EUR/anual
+Microsoft Azure: 24.000 EUR/anual
+Telefonica Empresas: 1.200 EUR/mes
+Securitas Direct: 450 EUR/mes
+"@
+
+"Backup_BBDD_Produccion.sql" = @"
+-- BACKUP BASE DE DATOS PRODUCCION
+-- Servidor: prod-db-01.empresa.local
+-- Fecha: 14/04/2026 03:00 UTC
+-- 38.421 clientes | 142.887 pedidos | 89.234 facturas
+-- SHA256: a4f2e8c91b3d7f...
+"@
+
+"Credenciales_Sistemas_IT.txt" = @"
+=== CREDENCIALES SISTEMAS - USO INTERNO IT ===
+Servidor ERP: admin_erp / Pr0d_2026!ERP
+VPN: vpn.empresa.com / sysadmin / VPN@dmin2026
+Exchange: exchange-admin@empresa.com / Exch@nge_Mast3r!
+WiFi Oficina: EMPRESA-CORP / C0rp0r@tiv@2026
+=== NO COMPARTIR FUERA DEL EQUIPO IT ===
+"@
+
+"Acta_Reunion_Direccion_Abril.docx" = @"
+ACTA COMITE DE DIRECCION - 08/04/2026
+Facturacion Q1: 1.1M EUR (+12%)
+Serie A en negociacion con Sequoia Capital
+Valoracion objetivo: 15M EUR
+Proxima reunion: 06/05/2026
+"@
+
+"Informe_Auditoria_Q1_2026.pdf" = @"
+INFORME AUDITORIA INTERNA - Q1 2026
+Auditor: Deloitte Spain S.L.
+3 facturas sin soporte (4.200 EUR)
+Retraso medio cobros: 47 dias
+Calificacion: FAVORABLE CON SALVEDADES
+"@
+
+}
+
+Write-Host ""
+Write-Host "  [+] Creando archivos de empresa en $demoPath ..." -ForegroundColor Cyan
+Write-Host ""
+
+foreach ($nombre in $archivosEmpresa.Keys) {
+    $ruta = Join-Path $demoPath $nombre
+    $archivosEmpresa[$nombre] | Out-File -FilePath $ruta -Encoding UTF8
+    Write-Host "      $nombre" -ForegroundColor Gray
+    Start-Sleep -Milliseconds 100
+}
+
+Write-Host ""
+Write-Host "  [+] $($archivosEmpresa.Count) archivos creados." -ForegroundColor Green
+Write-Host ""
+Start-Sleep -Seconds 1
+
+$archivos = Get-ChildItem $demoPath -File | Where-Object {
+    $_.Name -notmatch '\.WNCRY$' -and
+    $_.Name -notmatch '^_backup_' -and
+    $_.Name -ne '@Please_Read_Me@.txt'
+}
+
+# --- CIFRAR ARCHIVOS ---
+Write-Host "  [!] Cifrando archivos..." -ForegroundColor Red
+Write-Host ""
+
+foreach ($file in $archivos) {
+    Start-Sleep -Milliseconds 250
+
+    $backupName = "_backup_" + $file.Name
+    $backupPath = Join-Path $demoPath $backupName
+    Copy-Item -Path $file.FullName -Destination $backupPath -Force
+    Set-ItemProperty -Path $backupPath -Name Attributes -Value ([System.IO.FileAttributes]::Hidden)
+
+    Remove-Item -Path $file.FullName -Force
+
+    $hexLines = (1..12) | ForEach-Object { -join ((1..64) | ForEach-Object { '{0:X2}' -f (Get-Random -Max 256) }) }
+    $fakeCrypto = "-----BEGIN ENCRYPTED FILE-----`r`nAlgorithm: AES-256-CBC | RSA-2048`r`nStatus: LOCKED`r`nOriginal: $($file.Name)`r`n`r`n"
+    $fakeCrypto += ($hexLines -join "`r`n")
+    $fakeCrypto += "`r`n`r`n-----END ENCRYPTED FILE-----"
+
+    $wncryPath = Join-Path $demoPath ($file.Name + ".WNCRY")
+    $fakeCrypto | Out-File -FilePath $wncryPath -Encoding UTF8
+
+    Write-Host "      Encrypted: $($file.Name)" -ForegroundColor Yellow
+}
+
+@"
+
+  YOUR FILES HAVE BEEN ENCRYPTED
+  Send `$300 in Bitcoin to: $bitcoinWallet
+  Contact us via the application to get your decryption key.
+
+  [SIMULACION DE CONCIENCIACION - NO ES REAL]
+
+"@ | Out-File -FilePath (Join-Path $demoPath "@Please_Read_Me@.txt") -Encoding UTF8
+
+Write-Host ""
+Write-Host "  [!] $($archivos.Count) archivos cifrados." -ForegroundColor Red
+Write-Host ""
+
+Start-Process explorer.exe $demoPath
+Start-Sleep -Seconds 2
+
+# --- GUI ---
+Write-Host "Cargando..."
+Add-Type -AssemblyName PresentationFramework
+Add-Type -AssemblyName PresentationCore
+Add-Type -AssemblyName WindowsBase
+
+[xml]$xaml = @"
+<Window
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Wana Decrypt0r 2.0"
+    Width="1100" Height="660"
+    WindowStartupLocation="CenterScreen"
+    ResizeMode="NoResize"
+    Background="#1a1a2e">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="40"/>
+        </Grid.RowDefinitions>
+
+        <!-- Top bar -->
+        <Border Grid.Row="0" Background="#b80000" Padding="15,0">
+            <TextBlock Text="Wana Decrypt0r 2.0"
+                       Foreground="White" FontSize="17"
+                       FontWeight="Bold" FontFamily="Consolas"
+                       VerticalAlignment="Center"/>
+        </Border>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="290"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="340"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- LEFT PANEL: timers + decrypt -->
+            <Border Grid.Column="0" Background="#16213e" Padding="15"
+                    BorderBrush="#0f3460" BorderThickness="0,0,2,0">
+                <StackPanel>
+                    <TextBlock Text="&#x1F512;" FontSize="40"
+                               HorizontalAlignment="Center"
+                               Foreground="White" Margin="0,2,0,8"/>
+
+                    <TextBlock Text="Your files have been encrypted!"
+                               Foreground="White" FontFamily="Consolas"
+                               FontSize="12" FontWeight="Bold"
+                               TextWrapping="Wrap" TextAlignment="Center"
+                               Margin="0,0,0,10"/>
+
+                    <!-- Timer 1 -->
+                    <Border Background="#0f3460" CornerRadius="5"
+                            Padding="8" Margin="0,0,0,8">
+                        <StackPanel>
+                            <TextBlock Text="Payment will be raised on"
+                                       Foreground="#e94560" FontSize="9"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Name="TimerMain" Text="02:59:59"
+                                       Foreground="#e94560" FontSize="26"
+                                       FontWeight="Bold" FontFamily="Consolas"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,2,0,2"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Timer 2 -->
+                    <Border Background="#0f3460" CornerRadius="5"
+                            Padding="8" Margin="0,0,0,10">
+                        <StackPanel>
+                            <TextBlock Text="Your files will be lost on"
+                                       Foreground="#e94560" FontSize="9"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Name="TimerSecondary"
+                                       Text="06:23:47:12"
+                                       Foreground="#e94560" FontSize="20"
+                                       FontWeight="Bold" FontFamily="Consolas"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,2,0,2"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Bitcoin address -->
+                    <Border Background="#0f3460" CornerRadius="5"
+                            Padding="8" Margin="0,0,0,10">
+                        <StackPanel>
+                            <TextBlock Text="Send $300 in Bitcoin to:"
+                                       Foreground="#e94560" FontSize="10"
+                                       Margin="0,0,0,4"/>
+                            <TextBlock Name="WalletText"
+                                       Text="bc1qxy2kgdygjrs...x0wlh"
+                                       Foreground="#ffdd57"
+                                       FontFamily="Consolas" FontSize="9"
+                                       TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Decrypt key input -->
+                    <TextBlock Text="Enter decryption key:"
+                               Foreground="#aaa" FontSize="11"
+                               Margin="0,0,0,4"/>
+                    <TextBox Name="KeyBox"
+                             Height="28" FontSize="13"
+                             FontFamily="Consolas"
+                             Background="#0f3460"
+                             Foreground="White"
+                             BorderBrush="#e94560"
+                             Padding="5,2"
+                             VerticalContentAlignment="Center"/>
+
+                    <Border Name="DecryptBtn" Background="#e94560"
+                            CornerRadius="4" Padding="8"
+                            Margin="0,8,0,4" Cursor="Hand">
+                        <TextBlock Text="DECRYPT FILES"
+                                   Foreground="White" FontWeight="Bold"
+                                   FontSize="13" HorizontalAlignment="Center"/>
+                    </Border>
+
+                    <TextBlock Name="StatusMsg" Text=""
+                               Foreground="#e94560" FontSize="10"
+                               HorizontalAlignment="Center"
+                               Margin="0,4,0,0" TextWrapping="Wrap"/>
+
+                    <!-- Encrypted files -->
+                    <TextBlock Text="Encrypted files:"
+                               Foreground="#888" FontSize="9"
+                               Margin="0,10,0,3"/>
+                    <Border Background="#0f3460" CornerRadius="3"
+                            Padding="6" MaxHeight="100">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <TextBlock Name="FileListText"
+                                       Foreground="#ff6b6b"
+                                       FontFamily="Consolas"
+                                       FontSize="8"
+                                       TextWrapping="Wrap"/>
+                        </ScrollViewer>
+                    </Border>
+                </StackPanel>
+            </Border>
+
+            <!-- CENTER PANEL: info -->
+            <Border Grid.Column="1" Background="#1a1a2e" Padding="20">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <TextBlock Foreground="White" FontFamily="Consolas"
+                                   FontSize="18" FontWeight="Bold"
+                                   Margin="0,0,0,8"
+                                   Text="What Happened to My Computer?"/>
+
+                        <TextBlock Foreground="#ccc" FontFamily="Segoe UI"
+                                   FontSize="12" TextWrapping="Wrap"
+                                   Margin="0,0,0,15">
+                            Your important files are encrypted. Many of your
+                            documents, photos, videos, databases and other
+                            files are no longer accessible because they have
+                            been encrypted with strongest encryption and
+                            unique key generated for this computer.
+                        </TextBlock>
+
+                        <TextBlock Foreground="White" FontFamily="Consolas"
+                                   FontSize="18" FontWeight="Bold"
+                                   Margin="0,0,0,8"
+                                   Text="Can I Recover My Files?"/>
+
+                        <TextBlock Foreground="#ccc" FontFamily="Segoe UI"
+                                   FontSize="12" TextWrapping="Wrap"
+                                   Margin="0,0,0,15">
+                            Sure. We guarantee that you can recover all your
+                            files safely. You have 3 days to submit the payment.
+                            After that the price will be doubled. If you don't
+                            pay in 7 days, you won't recover your files forever.
+                            Use the chat to contact us after payment.
+                        </TextBlock>
+
+                        <TextBlock Foreground="White" FontFamily="Consolas"
+                                   FontSize="18" FontWeight="Bold"
+                                   Margin="0,0,0,8"
+                                   Text="How Do I Pay?"/>
+
+                        <TextBlock Foreground="#ccc" FontFamily="Segoe UI"
+                                   FontSize="12" TextWrapping="Wrap"
+                                   Margin="0,0,0,15">
+                            Payment is accepted in Bitcoin only. Send exactly
+                            $300 worth of BTC to the wallet address shown on
+                            the left panel. After payment, use the chat on the
+                            right to verify your transaction and receive your
+                            unique decryption key.
+                        </TextBlock>
+
+                        <!-- SIMULATION BANNER -->
+                        <Border Background="#2d6a4f" CornerRadius="8"
+                                Padding="15" Margin="0,10,0,0">
+                            <StackPanel>
+                                <TextBlock Text="ESTO ES UNA SIMULACION"
+                                           Foreground="#b7e4c7" FontSize="15"
+                                           FontWeight="Bold" FontFamily="Consolas"
+                                           HorizontalAlignment="Center"
+                                           Margin="0,0,0,4"/>
+                                <TextBlock Foreground="#d8f3dc" FontSize="10"
+                                           TextWrapping="Wrap"
+                                           TextAlignment="Center">
+                                    Ningun archivo ha sido danado de verdad.
+                                    Usa el chat para obtener el codigo de descifrado.
+                                    Pulsa ESC para cerrar la ventana.
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+
+            <!-- RIGHT PANEL: chat -->
+            <Border Grid.Column="2" Background="#111827"
+                    BorderBrush="#0f3460" BorderThickness="2,0,0,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="35"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="40"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Chat header -->
+                    <Border Grid.Row="0" Background="#0f3460" Padding="10,0">
+                        <TextBlock Text="Contact Attacker"
+                                   Foreground="#e94560" FontSize="13"
+                                   FontWeight="Bold" FontFamily="Consolas"
+                                   VerticalAlignment="Center"/>
+                    </Border>
+
+                    <!-- Chat messages -->
+                    <ScrollViewer Grid.Row="1" Name="ChatScroll"
+                                  VerticalScrollBarVisibility="Auto"
+                                  Background="#111827" Padding="8">
+                        <StackPanel Name="ChatPanel"/>
+                    </ScrollViewer>
+
+                    <!-- Chat input -->
+                    <Grid Grid.Row="2" Background="#0f3460">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="60"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox Name="ChatInput" Grid.Column="0"
+                                 FontSize="12" FontFamily="Consolas"
+                                 Background="#1a1a2e" Foreground="White"
+                                 BorderThickness="0" Padding="8,5"
+                                 VerticalContentAlignment="Center"/>
+                        <Border Name="SendBtn" Grid.Column="1"
+                                Background="#e94560" Cursor="Hand">
+                            <TextBlock Text="Send"
+                                       Foreground="White" FontSize="12"
+                                       FontWeight="Bold"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                        </Border>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Bottom bar -->
+        <Border Grid.Row="2" Background="#0f3460" Padding="15,0">
+            <TextBlock Text="[SIMULACION - DEMO DE CONCIENCIACION]"
+                       Foreground="#2d6a4f" FontSize="10"
+                       FontFamily="Consolas" VerticalAlignment="Center"
+                       HorizontalAlignment="Right"/>
+        </Border>
+    </Grid>
+</Window>
+"@
+
+$reader = New-Object System.Xml.XmlNodeReader $xaml
+$window = [Windows.Markup.XamlReader]::Load($reader)
+Write-Host "GUI cargada OK."
+
+# --- UI REFERENCES ---
+$timerMain      = $window.FindName("TimerMain")
+$timerSecondary = $window.FindName("TimerSecondary")
+$keyBox         = $window.FindName("KeyBox")
+$decryptBtn     = $window.FindName("DecryptBtn")
+$statusMsg      = $window.FindName("StatusMsg")
+$fileListText   = $window.FindName("FileListText")
+$chatPanel      = $window.FindName("ChatPanel")
+$chatScroll     = $window.FindName("ChatScroll")
+$chatInput      = $window.FindName("ChatInput")
+$sendBtn        = $window.FindName("SendBtn")
+
+# File list
+$wncryFiles = Get-ChildItem $demoPath -Filter "*.WNCRY" | ForEach-Object { $_.Name }
+$fileListText.Text = ($wncryFiles -join "`n")
+
+# --- CHAT SYSTEM ---
+$script:chatState = 0
+
+function Add-ChatMsg($text, $isAttacker) {
+    $border = New-Object System.Windows.Controls.Border
+    $border.CornerRadius = New-Object System.Windows.CornerRadius(8)
+    $border.Padding = New-Object System.Windows.Thickness(10,6,10,6)
+    $border.Margin = New-Object System.Windows.Thickness(0,3,0,3)
+    $border.MaxWidth = 280
+
+    $tb = New-Object System.Windows.Controls.TextBlock
+    $tb.TextWrapping = [System.Windows.TextWrapping]::Wrap
+    $tb.FontSize = 11
+    $tb.FontFamily = New-Object System.Windows.Media.FontFamily("Consolas")
+
+    if ($isAttacker) {
+        $border.Background = New-Object System.Windows.Media.SolidColorBrush([System.Windows.Media.Color]::FromRgb(15,52,96))
+        $border.HorizontalAlignment = [System.Windows.HorizontalAlignment]::Left
+        $tb.Foreground = New-Object System.Windows.Media.SolidColorBrush([System.Windows.Media.Color]::FromRgb(233,69,96))
+    } else {
+        $border.Background = New-Object System.Windows.Media.SolidColorBrush([System.Windows.Media.Color]::FromRgb(45,106,79))
+        $border.HorizontalAlignment = [System.Windows.HorizontalAlignment]::Right
+        $tb.Foreground = New-Object System.Windows.Media.SolidColorBrush([System.Windows.Media.Color]::FromRgb(216,243,220))
+    }
+
+    $tb.Text = $text
+    $border.Child = $tb
+    $chatPanel.Children.Add($border) | Out-Null
+    $chatScroll.ScrollToEnd()
+}
+
+# Initial attacker message
+Add-ChatMsg "Welcome. Your files have been encrypted with AES-256. Send `$300 in Bitcoin to recover them. Contact us here after payment." $true
+
+# --- CHAT SEND ---
+$script:sendMessage = {
+    $msg = $chatInput.Text.Trim()
+    if ($msg -eq "") { return }
+
+    Add-ChatMsg $msg $false
+    $chatInput.Text = ""
+
+    $window.Dispatcher.Invoke([Action]{}, [System.Windows.Threading.DispatcherPriority]::Background)
+    Start-Sleep -Milliseconds 800
+
+    switch ($script:chatState) {
+        0 {
+            Add-ChatMsg "Have you completed the Bitcoin payment of `$300 to our wallet address?" $true
+            $script:chatState = 1
+        }
+        1 {
+            Add-ChatMsg "Good. Send me your Bitcoin wallet address or transaction ID so I can verify the payment." $true
+            $script:chatState = 2
+        }
+        2 {
+            Add-ChatMsg "Verifying transaction..." $true
+            $window.Dispatcher.Invoke([Action]{}, [System.Windows.Threading.DispatcherPriority]::Background)
+            Start-Sleep -Milliseconds 1500
+            Add-ChatMsg "Payment of `$300 CONFIRMED." $true
+            $window.Dispatcher.Invoke([Action]{}, [System.Windows.Threading.DispatcherPriority]::Background)
+            Start-Sleep -Milliseconds 500
+            Add-ChatMsg "Your decryption key is:  WN4-DCR-2026" $true
+            $window.Dispatcher.Invoke([Action]{}, [System.Windows.Threading.DispatcherPriority]::Background)
+            Start-Sleep -Milliseconds 300
+            Add-ChatMsg "Enter the key in the 'Decrypt' field on the left panel and click DECRYPT FILES." $true
+            $script:chatState = 3
+        }
+        3 {
+            Add-ChatMsg "You already have the key. Enter WN4-DCR-2026 in the Decrypt field." $true
+        }
+    }
+}
+
+$sendBtn.Add_MouseLeftButtonUp($script:sendMessage)
+
+$chatInput.Add_KeyDown({
+    param($s, $e)
+    if ($e.Key -eq 'Return') {
+        $script:sendMessage.Invoke()
+    }
+})
+
+# --- TIMERS ---
+$script:s1 = 3 * 3600 - 1
+$script:s2 = 6 * 86400 + 23 * 3600 + 47 * 60 + 12
+
+$dispTimer = New-Object System.Windows.Threading.DispatcherTimer
+$dispTimer.Interval = [TimeSpan]::FromSeconds(1)
+$dispTimer.Add_Tick({
+    if ($script:s1 -gt 0) {
+        $script:s1--
+        $hh = [math]::Floor($script:s1/3600).ToString().PadLeft(2,'0')
+        $mm = [math]::Floor(($script:s1 % 3600)/60).ToString().PadLeft(2,'0')
+        $ss = ($script:s1 % 60).ToString().PadLeft(2,'0')
+        $timerMain.Text = "${hh}:${mm}:${ss}"
+    }
+    if ($script:s2 -gt 0) {
+        $script:s2--
+        $dd = [math]::Floor($script:s2/86400).ToString().PadLeft(2,'0')
+        $rr = $script:s2 % 86400
+        $hh2 = [math]::Floor($rr/3600).ToString().PadLeft(2,'0')
+        $mm2 = [math]::Floor(($rr % 3600)/60).ToString().PadLeft(2,'0')
+        $ss2 = ($rr % 60).ToString().PadLeft(2,'0')
+        $timerSecondary.Text = "${dd}:${hh2}:${mm2}:${ss2}"
+    }
+})
+$dispTimer.Start()
+
+# --- DECRYPT ---
+$script:decryptAction = {
+    $key = $keyBox.Text.Trim()
+
+    if ($key -eq $decryptKey) {
+        $statusMsg.Foreground = [System.Windows.Media.Brushes]::LightGreen
+        $statusMsg.Text = "Key accepted! Decrypting..."
+        $window.Dispatcher.Invoke([Action]{}, [System.Windows.Threading.DispatcherPriority]::Render)
+        Start-Sleep -Milliseconds 500
+
+        $backups = Get-ChildItem $demoPath -Force | Where-Object { $_.Name -match '^_backup_' }
+
+        foreach ($bk in $backups) {
+            $originalName = $bk.Name -replace '^_backup_', ''
+            $originalPath = Join-Path $demoPath $originalName
+            $wncryPath = $originalPath + ".WNCRY"
+            if (Test-Path $wncryPath) { Remove-Item $wncryPath -Force }
+            $bk.Attributes = [System.IO.FileAttributes]::Normal
+            Rename-Item -Path $bk.FullName -NewName $originalPath -Force
+        }
+
+        $notaPath = Join-Path $demoPath "@Please_Read_Me@.txt"
+        if (Test-Path $notaPath) { Remove-Item $notaPath -Force }
+
+        $statusMsg.Text = "All files restored!"
+        $window.Dispatcher.Invoke([Action]{}, [System.Windows.Threading.DispatcherPriority]::Render)
+
+        Start-Process explorer.exe $demoPath
+        Start-Sleep -Seconds 3
+        $dispTimer.Stop()
+        $window.Close()
+    }
+    else {
+        $statusMsg.Foreground = [System.Windows.Media.Brushes]::OrangeRed
+        $statusMsg.Text = "Invalid key. Contact us via chat."
+    }
+}
+
+$decryptBtn.Add_MouseLeftButtonUp($script:decryptAction)
+
+$keyBox.Add_KeyDown({
+    param($s, $e)
+    if ($e.Key -eq 'Return') {
+        $script:decryptAction.Invoke()
+    }
+})
+
+# ESC to close
+$window.Add_KeyDown({
+    param($s, $e)
+    if ($e.Key -eq 'Escape') { $dispTimer.Stop(); $window.Close() }
+})
+
+Write-Host "Lanzando ventana..."
+$window.ShowDialog() | Out-Null
+
+} catch {
+    Write-Host ""
+    Write-Host "!!! ERROR !!!" -ForegroundColor Red
+    Write-Host $_.Exception.Message -ForegroundColor Red
+    Write-Host ""
+    pause
+}
